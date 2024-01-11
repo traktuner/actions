@@ -32,7 +32,7 @@ def write_current_version(file_path, version):
     with open(file_path, 'w') as file:
         file.write(version)
 
-def create_github_issue(token, new_version):
+def create_github_issue(token, new_version, download_url):
     headers = {
         'Authorization': f'token {token}',
         'Accept': 'application/vnd.github.v3+json'
