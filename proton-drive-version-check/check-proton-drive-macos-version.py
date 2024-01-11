@@ -14,6 +14,11 @@ assignee = "traktuner"
 def fetch_current_version(url):
     response = requests.get(url)
     data = response.json()
+    return data['Releases'][0]['File']['Url']
+
+def fetch_download_url(url):
+    response = requests.get(url)
+    data = response.json()
     return data['Releases'][0]['Version']
 
 def read_last_version(file_path):
@@ -33,8 +38,8 @@ def create_github_issue(token, new_version):
         'Accept': 'application/vnd.github.v3+json'
     }
     data = {
-        'title': f'New macOS version detected: {new_version}',
-        'body': f'A new version of the file has been detected: {new_version}',
+        'title': f'New Proton Drive macOS version detected: {new_version}',
+        'body': f'New Proton Drive macOS Version detected: **{new_version}**\n\n Download URL: {download_url}',
         'assignees': [assignee]
     }
     response = requests.post(issue_url, headers=headers, json=data)
@@ -46,12 +51,13 @@ def create_github_issue(token, new_version):
 
 def main():
     current_version = fetch_current_version(version_url)
+    download_url = fetch_download_url(download_url)
     last_version = read_last_version('last_version_macos.txt')
 
     if current_version != last_version:
         print(f"Version has changed! New version: {current_version}")
         github_token = os.getenv('GITHUB_TOKEN')
-        create_github_issue(github_token, current_version)
+        create_github_issue(github_token, current_version, download_url)
         write_current_version('last_version_macos.txt', current_version)
         print("::set-output name=version_changed::true")
     else:
