@@ -3,6 +3,7 @@ name: Check Proton Drive macOS Version
 on:
   schedule:
     - cron: '0 0 * * *'  # Runs every day at midnight
+  workflow_dispatch:
 
 jobs:
   version-check:
