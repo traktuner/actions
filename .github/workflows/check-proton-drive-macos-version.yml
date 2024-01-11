@@ -2,7 +2,7 @@ name: Check Proton Drive macOS Version
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Runs every day at midnight
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
