@@ -37,6 +37,6 @@ jobs:
         git config --global user.name 'traktuner'
         git config --global user.email 'traktuner@users.noreply.github.com'
         git add last_version.txt
-        git commit -m "Update last_version.txt to ${current_version}"
+        git commit -m "Update last_version_macos.txt to ${current_version}"
         git push
       working-directory: proton-drive-version-check

@@ -33,7 +33,7 @@ def create_github_issue(token, new_version):
         'Accept': 'application/vnd.github.v3+json'
     }
     data = {
-        'title': f'New version detected: {new_version}',
+        'title': f'New macOS version detected: {new_version}',
         'body': f'A new version of the file has been detected: {new_version}',
         'assignees': [assignee]
     }
@@ -46,13 +46,13 @@ def create_github_issue(token, new_version):
 
 def main():
     current_version = fetch_current_version(version_url)
-    last_version = read_last_version('last_version.txt')
+    last_version = read_last_version('last_version_macos.txt')
 
     if current_version != last_version:
         print(f"Version has changed! New version: {current_version}")
-        github_token = os.getenv('GH_TOKEN')
+        github_token = os.getenv('GITHUB_TOKEN')
         create_github_issue(github_token, current_version)
-        write_current_version('last_version.txt', current_version)
+        write_current_version('last_version_macos.txt', current_version)
         print("::set-output name=version_changed::true")
     else:
         print("No change in version.")
