@@ -49,7 +49,7 @@ def main():
 
     if current_version != last_version:
         print(f"Version has changed! New version: {current_version}")
-        github_token = os.getenv('GH_TOKEN')
+        github_token = os.getenv('GITHUB_TOKEN')
         create_github_issue(github_token, current_version)
         write_current_version('last_version.txt', current_version)
     else:
