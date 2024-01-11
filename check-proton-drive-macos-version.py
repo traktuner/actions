@@ -44,18 +44,19 @@ def create_github_issue(token, new_version):
         print("Failed to create GitHub issue. Status Code:", response.status_code)
         print("Response:", response.json())
 
-
 def main():
     current_version = fetch_current_version(version_url)
     last_version = read_last_version('last_version.txt')
 
     if current_version != last_version:
         print(f"Version has changed! New version: {current_version}")
-        github_token = os.getenv('GITHUB_TOKEN')
+        github_token = os.getenv('GH_TOKEN')
         create_github_issue(github_token, current_version)
         write_current_version('last_version.txt', current_version)
+        print("::set-output name=version_changed::true")
     else:
         print("No change in version.")
+        print("::set-output name=version_changed::false")
 
 if __name__ == "__main__":
     main()

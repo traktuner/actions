@@ -31,9 +31,10 @@ jobs:
         python check-proton-drive-macos-version.py
 
     - name: Commit and Push if version changed
+      if: steps.check_version.outputs.version_changed == 'true'
       run: |
-        git config --global user.name '${{ github.actor }}'
-        git config --global user.email '${{ github.actor }}@users.noreply.github.com'
+        git config --global user.name 'traktuner'
+        git config --global user.email 'traktuner@users.noreply.github.com'
         git add last_version.txt
         git commit -m "Update last_version.txt to ${current_version}"
         git push
