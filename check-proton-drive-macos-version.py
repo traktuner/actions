@@ -41,7 +41,9 @@ def create_github_issue(token, new_version):
     if response.status_code == 201:
         print("GitHub issue created successfully.")
     else:
-        print("Failed to create GitHub issue.")
+        print("Failed to create GitHub issue. Status Code:", response.status_code)
+        print("Response:", response.json())
+
 
 def main():
     current_version = fetch_current_version(version_url)
