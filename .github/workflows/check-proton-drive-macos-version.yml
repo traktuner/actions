@@ -28,7 +28,7 @@ jobs:
 
     - name: Check Version
       run: |
-        python proton-drive-version-check/check-proton-drive-macos-version.py
+        python check-proton-drive-macos-version.py
       working-directory: proton-drive-version-check
 
     - name: Commit and Push if version changed
