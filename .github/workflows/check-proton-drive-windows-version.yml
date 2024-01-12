@@ -1,4 +1,4 @@
-name: Check Proton Drive macOS Version
+name: Check Proton Drive Windows Version
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  version-check-macos:
+  version-check-windows:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -27,7 +27,7 @@ jobs:
     - name: Check Version
       id: check_version
       run: |
-        python check-proton-drive-macos-version.py
+        python check-proton-drive-windows-version.py
       working-directory: proton-drive-version-check
 
     - name: Commit and Push if version changed
@@ -35,8 +35,8 @@ jobs:
       run: |
         git config --global user.name 'traktuner'
         git config --global user.email 'traktuner@users.noreply.github.com'
-        git add last_version_macos.txt
-        git commit -m "Update last_version_macos.txt to ${{ steps.check_version.outputs.current_version }}"
+        git add last_version_windows.txt
+        git commit -m "Update last_version_windows.txt to ${{ steps.check_version.outputs.current_version }}"
         git push
       working-directory: proton-drive-version-check
 
