@@ -39,3 +39,7 @@ jobs:
         git commit -m "Update last_version_macos.txt to ${{ steps.check_version.outputs.current_version }}"
         git push
       working-directory: proton-drive-version-check
+
+    - name: Delete workflow runs
+      uses: Mattraks/delete-workflow-runs@v2.0.6
+  
