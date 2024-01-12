@@ -11,15 +11,12 @@ issue_url = "https://api.github.com/repos/traktuner/actions/issues"
 # Your GitHub username
 assignee = "traktuner"
 
-def fetch_current_version(url):
+def fetch_version_info(url):
     response = requests.get(url)
     data = response.json()
-    return data['Releases'][0]['File']['Url']
-
-def fetch_download_url(url):
-    response = requests.get(url)
-    data = response.json()
-    return data['Releases'][0]['Version']
+    version = data['Releases'][0]['Version']
+    download_url = data['Releases'][0]['File']['Url']
+    return version, download_url
 
 def read_last_version(file_path):
     try:
@@ -39,7 +36,7 @@ def create_github_issue(token, new_version, download_url):
     }
     data = {
         'title': f'New Proton Drive macOS version detected: {new_version}',
-        'body': f'New Proton Drive macOS Version detected: **{new_version}**\n\n Download URL: {download_url}',
+        'body': f'New Proton Drive macOS Version detected: **{new_version}**\n\nDownload URL: {download_url}',
         'assignees': [assignee]
     }
     response = requests.post(issue_url, headers=headers, json=data)
@@ -50,8 +47,7 @@ def create_github_issue(token, new_version, download_url):
         print("Response:", response.json())
 
 def main():
-    current_version = fetch_current_version(version_url)
-    download_url = fetch_download_url(download_url)
+    current_version, download_url = fetch_version_info(version_url)
     last_version = read_last_version('last_version_macos.txt')
 
     if current_version != last_version:
