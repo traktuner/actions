@@ -1,8 +1,6 @@
 name: Check Proton Drive Windows Version
 
 on:
-  schedule:
-    - cron: '30 * * * *'
   workflow_dispatch:
 
 jobs:
