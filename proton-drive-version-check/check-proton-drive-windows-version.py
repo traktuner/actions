@@ -3,7 +3,7 @@ import json
 import os
 
 # URL of the version.json file
-version_url = "https://proton.me/download/drive/macos/version.json"
+version_url = "https://proton.me/download/drive/windows/version.json"
 
 # GitHub API URL for creating an issue
 issue_url = "https://api.github.com/repos/traktuner/actions/issues"
