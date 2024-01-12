@@ -56,6 +56,7 @@ def main():
         create_github_issue(github_token, current_version, download_url)
         write_current_version('last_version_macos.txt', current_version)
         print("::set-output name=version_changed::true")
+        print(f"::set-output name=current_version::{current_version}")
     else:
         print("No change in version.")
         print("::set-output name=version_changed::false")
