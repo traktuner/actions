@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  version-check:
+  version-check-macos:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -41,5 +41,10 @@ jobs:
       working-directory: proton-drive-version-check
 
     - name: Delete workflow runs
-      uses: Mattraks/delete-workflow-runs@v2.0.6
+      uses: Mattraks/delete-workflow-runs@v2
+      with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          retain_days: 30
+          keep_minimum_runs: 6
   
