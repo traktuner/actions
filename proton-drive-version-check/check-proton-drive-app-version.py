@@ -69,10 +69,10 @@ def main():
             print(f"Version has changed for {app['name']}! New version: {current_version}")
             create_github_issue(github_token, app['name'], current_version, download_url)
             write_current_version(app['last_version_file'], current_version)
-            print(f"::set-output name=version_changed_{app['name']}::true")
+            os.system(f'echo "version_changed_{app["name"]}={True}" >> $GITHUB_ENV')
         else:
             print(f"No change in version for {app['name']}.")
-            print(f"::set-output name=version_changed_{app['name']}::false")
+            os.system(f'echo "version_changed_{app["name"]}={False}" >> $GITHUB_ENV')
 
 if __name__ == "__main__":
     main()
