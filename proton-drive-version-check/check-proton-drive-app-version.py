@@ -48,8 +48,7 @@ def create_github_issue(token, app_name, new_version, download_url):
     }
     data = {
         'title': f'New version detected for {app_name}: {new_version}',
-        'body': f'New Version of {app_name} detected: **{new_version}**\n\nDownload URL: {download_url}',
-        'assignees': [assignee]
+        'body': f'New Version of {app_name} detected: **{new_version}**\n\nDownload URL: {download_url}'
     }
     response = requests.post(issue_url, headers=headers, json=data)
     if response.status_code == 201:
