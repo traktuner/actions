@@ -14,23 +14,28 @@ def fetch_version_info(url):
     response = requests.get(url)
     data = json.loads(response.content)
 
-    # Extract relevant information using a generic parser function (e.g., parse_json)
-    version_list = [item for item in data["Releases"] if "Version" in item]
-    parsed_data = parse_json(version_list[0] or {}, ["Version"]) if len(version_list) > 0 else None
-    
+    # Extract version information
+    version_list = [item for item in data.get("Releases", []) if "Version" in item]
+    version_data = version_list[0] if len(version_list) > 0 else {}
+    parsed_data = parse_json(version_data, ["Version"])
+
     # Extract download URL
-    download_urls = [release.get("File", [{}])[0].get("Url", "") if isinstance(release.get("File"), list)
-                     else release.get("File", {}).get("Url", "") for release in data["Releases"]]
-    download_url = download_urls[0] if download_urls else None
+    download_url = extract_download_url(version_data)
 
     return parsed_data, download_url
+
+def extract_download_url(release):
+    if isinstance(release.get("File"), list):
+        return release["File"][0].get("Url", "") if release["File"] else None
+    elif isinstance(release.get("File"), dict):
+        return release["File"].get("Url", "")
+    return None
 
 def read_last_version(file_path):
     try:
         with open(file_path, "r") as file:
             data = file.read()
             if data:
-                # Ensure the data is parsed into a dictionary
                 return json.loads(data)
             else:
                 return None
@@ -61,10 +66,10 @@ def create_github_issue(token, app_name, new_version, download_url):
 def parse_json(data, keys):
     result = {}
 
-    if isinstance(data, list) and len(data) > 0:   # Check if data is a list
-        return parse_json(data[0], keys)  # Recursively call parse_json on the first item in the list
+    if isinstance(data, list) and len(data) > 0:
+        return parse_json(data[0], keys)
 
-    elif not isinstance(data, dict):  # If data is neither a list nor a dictionary, return None
+    if not isinstance(data, dict):
         return None
 
     for key in keys:
@@ -82,7 +87,6 @@ def main():
         last_version_file_path = f"{app['name']}.json"
         last_version_data = read_last_version(last_version_file_path)
 
-        # Ensure last_version_data is a dictionary
         if isinstance(last_version_data, str):
             last_version_data = json.loads(last_version_data)
 
