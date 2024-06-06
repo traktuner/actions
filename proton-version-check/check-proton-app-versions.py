@@ -3,6 +3,9 @@ import json
 import os  
 from yaml import safe_load  
   
+# GitHub API URL for creating an issue
+issue_url = "https://api.github.com/repos/traktuner/actions/issues"
+
 # Load application configurations from YAML file  
 with open("applications.yaml", "r") as f:  
     applications = safe_load(f)  
