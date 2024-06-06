@@ -19,10 +19,16 @@ def fetch_version_info(url):
     parsed_data, download_url = None, None
     if len(version_list) > 0:
         parsed_data = parse_json([version_list[0]], ["Version"])
-        download_urls = [release["File"][0]["Url"] for release in data["Releases"] if "File" in release and "Url" in release["File"][0]]
-        download_url = download_urls[0] if download_urls else None
-        
-    return parsed_data, download_url
+        for release in data["Releases"]:
+            if "File" in release:
+                if isinstance(release["File"], list) and release["File"]:
+                    download_url = release["File"][0]["Url"]
+                    break
+                elif isinstance(release["File"], dict):
+                    download_url = release["File"].get("Url")
+                    break
+
+    return parsed_data, download_ur
 
 def read_last_version(file_path):
     try:
