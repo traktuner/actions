@@ -16,72 +16,48 @@ def fetch_version_info(url):
 
     # Extract relevant information using a generic parser function (e.g., parse_json)
     version_list = [item for item in data["Releases"] if "Version" in item]
-    parsed_data, download_url = None, None
-    if len(version_list) > 0:
-        parsed_data = parse_json([version_list[0]], ["Version"])
-        for release in data["Releases"]:
-            if "File" in release:
-                if isinstance(release["File"], list) and release["File"]:
-                    download_url = release["File"][0]["Url"]
-                    break
-                elif isinstance(release["File"], dict):
-                    download_url = release["File"].get("Url")
-                    break
+    parsed_data = parse_json(version_list[0] or {}, ["Version"]) if len(version_list) > 0 else None
+    
+    # Extract download URL
+    download_urls = [release.get("File", [{}])[0].get("Url", "") if isinstance(release.get("File"), list)
+                     else release.get("File", {}).get("Url", "") for release in data["Releases"]]
+    download_url = download_urls[0] if download_urls else None
 
     return parsed_data, download_url
-
-import json
-
-import json
 
 def read_last_version(file_path):
     try:
         with open(file_path, "r") as file:
             data = file.read()
-            if data:
-                try:
-                    return json.loads(data)  # Load as dictionary
-                except json.JSONDecodeError:
-                    print("Error: Unable to decode JSON from file:", file_path)
-                    return None
-            else:
-                return None
+            return json.loads(data)  # Load as dictionary
     except FileNotFoundError:
         return None
 
-def write_current_version(file_path, version, issue_number=None):
-    data = {
-        "version": version,
-        "issue_number": issue_number
-    }
+def write_current_version(file_path, version):
     with open(file_path, "w") as file:
-        json.dump(data, file)
+        json.dump(version, file)
 
 def create_github_issue(token, app_name, new_version, download_url):
     headers = {
         'Authorization': f'token {token}',
         'Accept': 'application/vnd.github.v3+json'
     }
-
     data = {
         'title': f'New version detected for {app_name}: {new_version}',
         'body': f'New Version of {app_name} detected: **{new_version}**\n\nDownload URL: {download_url}'
     }
-
     response = requests.post(issue_url, headers=headers, json=data)
 
     if response.status_code == 201:
         print(f"GitHub issue created successfully for {app_name}.")
-        return response.json()["number"]
     else:
         print(f"Failed to create GitHub issue for {app_name}. Status Code:", response.status_code)
         print("Response:", response.json())
-        return None
 
 def parse_json(data, keys):
     result = {}
 
-    if isinstance(data, list) and len(data) > 0:  # Check if data is a list
+    if isinstance(data, list) and len(data) > 0:   # Check if data is a list
         return parse_json(data[0], keys)  # Recursively call parse_json on the first item in the list
 
     elif not isinstance(data, dict):  # If data is neither a list nor a dictionary, return None
@@ -101,16 +77,15 @@ def main():
 
         last_version_file_path = f"{app['name']}.json"
         last_version_data = read_last_version(last_version_file_path)
-        last_version = last_version_data.get("version") if last_version_data else None
-        last_issue_number = last_version_data.get("issue_number") if last_version_data else None
 
-        if current_version_info and (last_version is None or json.dumps(current_version_info) != json.dumps(last_version)):
+        last_version = last_version_data.get("Version") if last_version_data else None
+
+        if current_version_info and (last_version is None or json.dumps(current_version_info) != json.dumps(last_version_data)):
             print(f"Version has changed for {app['name']}! New version: {current_version_info}")
 
-            issue_number = create_github_issue(github_token, app["name"], current_version_info.get("Version"), download_url)
+            create_github_issue(github_token, app["name"], current_version_info.get("Version"), download_url)
 
-            if issue_number:
-                write_current_version(last_version_file_path, current_version_info, issue_number)
+            write_current_version(last_version_file_path, current_version_info)
         else:
             print(f"No change in version for {app['name']}.")
 
