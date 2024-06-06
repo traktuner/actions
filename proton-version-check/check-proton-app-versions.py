@@ -29,7 +29,11 @@ def read_last_version(file_path):
     try:
         with open(file_path, "r") as file:
             data = file.read()
-            return json.loads(data)  # Load as dictionary
+            if data:
+                # Ensure the data is parsed into a dictionary
+                return json.loads(data)
+            else:
+                return None
     except FileNotFoundError:
         return None
 
@@ -77,6 +81,10 @@ def main():
 
         last_version_file_path = f"{app['name']}.json"
         last_version_data = read_last_version(last_version_file_path)
+
+        # Ensure last_version_data is a dictionary
+        if isinstance(last_version_data, str):
+            last_version_data = json.loads(last_version_data)
 
         last_version = last_version_data.get("Version") if last_version_data else None
 
