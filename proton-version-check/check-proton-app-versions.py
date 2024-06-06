@@ -57,15 +57,15 @@ def create_github_issue(token, app_name, new_version, download_url):
 def parse_json(data, keys):    
     result = {}    
   
-     if isinstance(data, list) and len(data) > 0:    # Check if data is a list  
-         return parse_json(data[0], keys)   # Recursively call parse_json on the first item in the list  
+    if isinstance(data, list) and len(data) > 0:    # Check if data is a list  
+        return parse_json(data[0], keys)   # Recursively call parse_json on the first item in the list  
   
-     elif not isinstance(data, dict):  # If data is neither a list nor a dictionary, return None    
-        return None    
+    elif not isinstance(data, dict):  # If data is neither a list nor a dictionary, return None    
+       return None    
   
-     for key in keys:    
-         if key in data:      
-             result[key] = data[key]     
+    for key in keys:    
+        if key in data:      
+            result[key] = data[key]     
   
     return result     
   
