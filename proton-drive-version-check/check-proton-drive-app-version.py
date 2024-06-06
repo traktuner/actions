@@ -13,6 +13,11 @@ applications = [
         "name": "Proton Drive Windows",
         "version_url": "https://proton.me/download/drive/windows/version.json",
         "last_version_file": "last_version_drive_windows.txt"
+    },
+    {
+        "name": "Proton Pass macOS",
+        "version_url": "https://proton.me/download/PassDesktop/darwin/universal/version.json",
+        "last_version_file": "last_version_pass_macos.txt"
     }
     # Add more applications here
 ]
