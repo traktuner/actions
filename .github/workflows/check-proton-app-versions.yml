@@ -32,7 +32,7 @@ jobs:
       id: check_version  
       working-directory: proton-version-check  
       run: |    
-        python ./check-proton-app-versions.py
+        python check-proton-app-versions.py
   
     - name: Commit and Push if any version changed  
       run: |  
