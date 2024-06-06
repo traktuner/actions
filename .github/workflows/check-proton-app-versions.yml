@@ -5,11 +5,6 @@ on:
     - cron: '30 * * * *'  
   workflow_dispatch:  
   
-permissions:  
-  contents: read  
-  pull-requests: none  
-  issues: none  
-  
 jobs:  
   proton-drive-version-check:  
     runs-on: ubuntu-latest  
