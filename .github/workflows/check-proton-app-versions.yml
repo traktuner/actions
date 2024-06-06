@@ -29,10 +29,10 @@ jobs:
       run: pip install requests pyyaml
   
     - name: Check Version  
-        id: check_version  
-        working-directory: /proton-version-check  
-        run: |    
-          python ./check-proton-app-versions.py  
+      id: check_version  
+      working-directory: /proton-version-check  
+      run: |    
+        python ./check-proton-app-versions.py
   
     - name: Commit and Push if any version changed  
       env:  
