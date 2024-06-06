@@ -26,7 +26,7 @@ jobs:
          python-version: '3.x'  
   
      - name: Install dependencies  
-       run: pip install requests yaml  
+       run: pip install requests  
   
      - name: Check Version  
        id: check_version  
