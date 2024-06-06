@@ -32,10 +32,20 @@ def fetch_version_info(url):
 
 import json
 
+import json
+
 def read_last_version(file_path):
     try:
         with open(file_path, "r") as file:
-            return json.loads(file.read())  # Load as dictionary
+            data = file.read()
+            if data:
+                try:
+                    return json.loads(data)  # Load as dictionary
+                except json.JSONDecodeError:
+                    print("Error: Unable to decode JSON from file:", file_path)
+                    return None
+            else:
+                return None
     except FileNotFoundError:
         return None
 
