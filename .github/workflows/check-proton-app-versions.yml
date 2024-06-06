@@ -1,0 +1,54 @@
+name: Check Proton app versions  
+  
+on:  
+  schedule:  
+    - cron: '30 * * * *'  
+  workflow_dispatch:  
+  
+permissions:  
+  contents: read  
+  pull-requests: none  
+  issues: none  
+  
+jobs:  
+  proton-drive-version-check:  
+    runs-on: ubuntu-latest  
+    env:  
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+  
+    steps:  
+     - name: Checkout repository  
+       uses: actions/checkout@v4  
+  
+     - name: Set up Python  
+       uses: actions/setup-python@v5  
+       with:  
+         python-version: '3.x'  
+  
+     - name: Install dependencies  
+       run: pip install requests yaml  
+  
+     - name: Check Version  
+       id: check_version  
+       run: |  
+        python check-proton-app-versions.py  
+       working-directory: proton-version-check  
+  
+     - name: Commit and Push if any version changed  
+       env:  
+         COMMIT_MESSAGE: "Update last_version files"  
+       run: |  
+         git config --global user.name 'traktuner'  
+         git config --global user.email 'traktuner@users.noreply.github.com'  
+         git add .  
+         git diff --staged --quiet || git commit -m "${COMMIT_MESSAGE}"  
+         git push  
+       working-directory: proton-version-check  
+  
+     - name: Delete workflow runs  
+       uses: Mattraks/delete-workflow-runs@v2  
+       with:  
+          token: ${{ secrets.GITHUB_TOKEN }}  
+          repository: ${{ github.repository }}  
+          retain_days: 14  
+          keep_minimum_runs: 6
