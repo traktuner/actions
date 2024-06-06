@@ -19,7 +19,8 @@ def fetch_version_info(url):
     parsed_data, download_url = None, None
     if len(version_list) > 0:
         parsed_data = parse_json([version_list[0]], ["Version"])
-        download_url = [release["File"][0]["Url"] for release in data["Releases"] if "Release" in release][0]
+        download_urls = [release["File"][0]["Url"] for release in data["Releases"] if "File" in release and "Url" in release["File"][0]]
+        download_url = download_urls[0] if download_urls else None
         
     return parsed_data, download_url
 
