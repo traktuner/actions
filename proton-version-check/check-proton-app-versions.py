@@ -28,7 +28,7 @@ def fetch_version_info(url):
                     download_url = release["File"].get("Url")
                     break
 
-    return parsed_data, download_ur
+    return parsed_data, download_url
 
 def read_last_version(file_path):
     try:
