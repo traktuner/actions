@@ -30,13 +30,14 @@ def fetch_version_info(url):
 
     return parsed_data, download_url
 
+import json
+
 def read_last_version(file_path):
     try:
         with open(file_path, "r") as file:
-            return json.load(file)
+            return json.loads(file.read())  # Load as dictionary
     except FileNotFoundError:
         return None
-
 
 def write_current_version(file_path, version, issue_number=None):
     data = {
