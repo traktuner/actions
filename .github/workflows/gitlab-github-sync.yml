@@ -14,5 +14,5 @@ jobs:
           git clone --mirror https://gitlab.rrze.fau.de/faumac/networkShareMounter.git
       - name: Push to GitHub Repository
         run: |
-          cd gitlab-repo.git
+          cd networkShareMounter.git
           git push --mirror "https://${{ secrets.GH_PAT }}@github.com/traktuner/networkShareMounter.git"
