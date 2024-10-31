@@ -1,0 +1,17 @@
+name: Mirror GitLab to GitHub
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone GitLab Repository
+        run: |
+          git clone --mirror https://gitlab.rrze.fau.de/faumac/networkShareMounter.git
+      - name: Push to GitHub Repository
+        run: |
+          cd gitlab-repo.git
+          git push --mirror "https://${{ secrets.GH_PAT }}@github.com/traktuner/networkShareMounter.git"
