@@ -3,6 +3,7 @@ name: Mirror GitLab to GitHub
 on:
   schedule:
     - cron: '*/30 * * * *'
+  workflow_dispatch:
 
 jobs:
   mirror:
