@@ -16,7 +16,8 @@ FORECAST_URL = (
 
 # Schwellenwerte (m^3/s)
 THRESHOLDS: Dict[str, float] = {
-    "HQ1": 36.0,
+    "HQ1": 0.01,
+    #"HQ1": 36.0,
     "HQ2": 75.0,
     "HQ5": 110.0,
     "HQ10": 150.0,
