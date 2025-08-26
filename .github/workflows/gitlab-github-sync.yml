@@ -5,6 +5,13 @@ on:
     - cron: '23 */6 * * *'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
+concurrency:
+  group: mirror-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   mirror:
     runs-on: ubuntu-latest
