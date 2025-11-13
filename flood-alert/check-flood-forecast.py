@@ -74,16 +74,20 @@ def parse_forecast(csv_text: str) -> List[Tuple[datetime, float]]:
         parts = [p.strip() for p in line.split(";")]
         if len(parts) < 2:
             continue
+        # Prüfe, ob der Wert leer ist
+        value_str = parts[1].strip()
+        if not value_str:
+            continue
         try:
             ts = datetime.strptime(parts[0], "%Y-%m-%d %H:%M:%S")
-            value = float(parts[1].replace(",", "."))
+            value = float(value_str.replace(",", "."))
         except Exception:
             # Sobald ein anderer Block kommt, abbrechen
             continue
         data.append((ts, value))
 
     if not data:
-        raise ValueError("Keine Prognosedaten gefunden")
+        raise ValueError("Keine Prognosedaten gefunden (alle Werte sind leer oder ungültig)")
     return data
 
 
@@ -129,6 +133,40 @@ def build_issue_body(
     return "\n".join(lines)
 
 
+def load_smtp_config() -> Tuple[str, int, str, str, str, List[str]]:
+    """Lädt und validiert SMTP-Konfiguration aus Umgebungsvariablen."""
+    smtp_server = os.getenv("SMTP_SERVER", "").strip()
+    smtp_port_str = os.getenv("SMTP_PORT", "").strip()
+    smtp_username = os.getenv("SMTP_USERNAME", "").strip()
+    smtp_password = os.getenv("SMTP_PASSWORD", "").strip()
+    sender_email = os.getenv("SMTP_SENDER_EMAIL", "").strip()
+    # Priorität: SMTP_NOTIFY_MAIL > SMTP_SENDER_EMAIL
+    recipients_raw = os.getenv("SMTP_NOTIFY_MAIL", "").strip()
+    if not recipients_raw:
+        recipients_raw = sender_email
+    recipients = [r.strip() for r in recipients_raw.split(",") if r.strip()]
+
+    try:
+        smtp_port = int(smtp_port_str)
+    except ValueError:
+        raise ValueError("SMTP_PORT ist ungültig oder fehlt")
+
+    missing = [
+        name
+        for name, val in [
+            ("SMTP_SERVER", smtp_server),
+            ("SMTP_USERNAME", smtp_username),
+            ("SMTP_PASSWORD", smtp_password),
+            ("SMTP_SENDER_EMAIL", sender_email),
+        ]
+        if not val
+    ]
+    if missing:
+        raise ValueError(f"Fehlende SMTP-Umgebungsvariablen: {', '.join(missing)}")
+
+    return smtp_server, smtp_port, smtp_username, smtp_password, sender_email, recipients
+
+
 def send_email(
     smtp_server: str,
     smtp_port: int,
@@ -168,7 +206,36 @@ def send_email(
 
 def main() -> int:
     csv_text = fetch_csv_text_with_retry(FORECAST_URL)
-    forecast = parse_forecast(csv_text)
+    try:
+        forecast = parse_forecast(csv_text)
+    except ValueError as e:
+        if "Keine Prognosedaten gefunden" in str(e):
+            print(f"Warnung: {e}. Sende Benachrichtigungs-E-Mail.")
+            try:
+                smtp_server, smtp_port, smtp_username, smtp_password, sender_email, recipients = load_smtp_config()
+                body = (
+                    "Automatische Hochwasserwarnung – Keine Prognosedaten verfügbar\n\n"
+                    f"Die Datenquelle liefert aktuell keine Prognosedaten.\n\n"
+                    f"Fehlermeldung: {e}\n\n"
+                    f"Quelle: {FORECAST_URL}\n"
+                )
+                title = "Hochwasserwarnung – Keine Prognosedaten verfügbar (Atzenbrugg)"
+                send_email(
+                    smtp_server=smtp_server,
+                    smtp_port=smtp_port,
+                    smtp_username=smtp_username,
+                    smtp_password=smtp_password,
+                    sender_email=sender_email,
+                    recipients=recipients,
+                    subject=title,
+                    body=body,
+                )
+                print("Benachrichtigungs-E-Mail gesendet.")
+            except ValueError as smtp_err:
+                print(f"Fehler beim Laden der SMTP-Konfiguration: {smtp_err}", file=sys.stderr)
+                return 2
+            return 0
+        raise
 
     # Zeitraum ermitteln (erste und letzte Zeit in Prognose)
     start_ts, _ = forecast[0]
@@ -185,36 +252,10 @@ def main() -> int:
     body = build_issue_body(crossings, (start_ts, end_ts))
     title = "Hochwasserwarnung – Durchflussprognose HQ1+ erreicht (Atzenbrugg)"
 
-    # SMTP-Parameter aus Umgebungsvariablen
-    smtp_server = os.getenv("SMTP_SERVER", "").strip()
-    smtp_port_str = os.getenv("SMTP_PORT", "").strip()
-    smtp_username = os.getenv("SMTP_USERNAME", "").strip()
-    smtp_password = os.getenv("SMTP_PASSWORD", "").strip()
-    sender_email = os.getenv("SMTP_SENDER_EMAIL", "").strip()
-    # Priorität: SMTP_NOTIFY_MAIL > SMTP_SENDER_EMAIL
-    recipients_raw = os.getenv("SMTP_NOTIFY_MAIL", "").strip()
-    if not recipients_raw:
-        recipients_raw = sender_email
-    recipients = [r.strip() for r in recipients_raw.split(",") if r.strip()]
-
     try:
-        smtp_port = int(smtp_port_str)
-    except ValueError:
-        print("SMTP_PORT ist ungültig oder fehlt", file=sys.stderr)
-        return 2
-
-    missing = [
-        name
-        for name, val in [
-            ("SMTP_SERVER", smtp_server),
-            ("SMTP_USERNAME", smtp_username),
-            ("SMTP_PASSWORD", smtp_password),
-            ("SMTP_SENDER_EMAIL", sender_email),
-        ]
-        if not val
-    ]
-    if missing:
-        print(f"Fehlende SMTP-Umgebungsvariablen: {', '.join(missing)}", file=sys.stderr)
+        smtp_server, smtp_port, smtp_username, smtp_password, sender_email, recipients = load_smtp_config()
+    except ValueError as e:
+        print(f"Fehler beim Laden der SMTP-Konfiguration: {e}", file=sys.stderr)
         return 2
 
     send_email(
