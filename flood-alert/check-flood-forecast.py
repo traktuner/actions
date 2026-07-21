@@ -316,6 +316,37 @@ def _build_diagnostic_sample(csv_text: str, max_lines: int = 25) -> str:
     return f"(gesamt {total} Zeilen)\n" + "\n".join(shown) + suffix
 
 
+def _write_github_summary(forecast: List[Tuple[datetime, float]], crossings: Dict[str, Optional[Tuple[datetime, float]]]) -> None:
+    """Schreibt eine Markdown-Zusammenfassung der Prognose nach $GITHUB_STEP_SUMMARY."""
+    summary_path = os.getenv("GITHUB_STEP_SUMMARY")
+    if not summary_path:
+        return  # Lokal oder ohne Summary-Umgebung → nichts tun
+
+    lines: List[str] = []
+    lines.append("## Hochwasser-Prognose Atzenbrugg (Bundesstraßenbrücke)")
+    lines.append("")
+    lines.append(f"**Zeitraum**: {forecast[0][0].strftime('%Y-%m-%d %H:%M')} bis {forecast[-1][0].strftime('%Y-%m-%d %H:%M')}")
+    lines.append("")
+    lines.append("| Zeit | Durchfluss (m³/s) |")
+    lines.append("|------|-------------------|")
+    for ts, value in forecast:
+        lines.append(f"| {ts.strftime('%Y-%m-%d %H:%M')} | {value:.2f} |")
+    lines.append("")
+    lines.append("### Schwellenüberschreitungen")
+    lines.append("")
+    for name, data in sorted(crossings.items(), key=lambda kv: THRESHOLDS[kv[0]]):
+        if data:
+            ts, value = data
+            lines.append(f"- **{name}** ({THRESHOLDS[name]:.0f} m³/s): erreicht um {ts.strftime('%Y-%m-%d %H:%M')} ≈ {value:.2f} m³/s")
+        else:
+            lines.append(f"- **{name}** ({THRESHOLDS[name]:.0f} m³/s): nicht prognostiziert")
+    lines.append("")
+    lines.append(f"*Quelle: {FORECAST_URL}*")
+
+    with open(summary_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines))
+
+
 def main() -> int:
     try:
         csv_text = fetch_csv_text_with_retry(FORECAST_URL)
@@ -387,6 +418,9 @@ def main() -> int:
     end_ts, _ = forecast[-1]
 
     crossings = find_threshold_crossings(forecast, THRESHOLDS)
+
+    # GitHub Step Summary schreiben (immer, auch wenn keine Warnung nötig ist)
+    _write_github_summary(forecast, crossings)
 
     # Nur melden, wenn mindestens HQ1 erreicht wird
     hq1 = crossings.get("HQ1")
